@@ -531,8 +531,10 @@
 //   }
 // }
 
+import 'package:canteen_app/Providers/imgpro.dart';
 import 'package:canteen_app/pages/addition.dart';
 import 'package:canteen_app/pages/update_options.dart';
+import 'package:provider/provider.dart';
 import 'pages/lunch.dart';
 import 'pages/history.dart';
 import 'pages/update.dart';
@@ -555,22 +557,24 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Admin Homepage',
-      theme: ThemeData(
-        primarySwatch: Colors.red,
+    return MultiProvider(providers: [ChangeNotifierProvider(create: (context)=> imgpro())],
+      child: MaterialApp(
+        title: 'Admin Homepage',
+        theme: ThemeData(
+          primarySwatch: Colors.red,
+        ),
+        home: AdminHomePage(),
+        routes: {
+          '/home': (context) => AdminHomePage(),
+          '/history': (context) => OrderHistoryPage(),
+          '/update': (context) => update_options(),
+          '/add': (context) => UploadPage(),
+          '/scan': (context) => Scanqr(),
+          '/addnew': (context) => NewItem(),
+          '/snacks': (context) => Lunch(),
+          // 'addlunch':(context) =>
+        },
       ),
-      home: AdminHomePage(),
-      routes: {
-        '/home': (context) => AdminHomePage(),
-        '/history': (context) => OrderHistoryPage(),
-        '/update': (context) => update_options(),
-        '/add': (context) => UploadPage(),
-        '/scan': (context) => Scanqr(),
-        '/addnew': (context) => NewItem(),
-        '/snacks': (context) => Lunch(),
-        // 'addlunch':(context) =>
-      },
     );
   }
 }
@@ -681,10 +685,10 @@ class _AdminHomePageState extends State<AdminHomePage> {
                     child: TextButton(
                       onPressed: () {
                         // Handle onPressed for Menu
-                        // Navigator.push(context,
-                        //     MaterialPageRoute(builder: (context) {
-                        //   // return YourPage2();
-                        // }));
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                              return UploadPage();
+                        }));
                       },
                       child: Text(
                         'Menu',
