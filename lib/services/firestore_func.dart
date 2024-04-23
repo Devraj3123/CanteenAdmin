@@ -111,7 +111,7 @@ class History {
         int tot = 0;
         List order = d['order'];
         order.forEach((element) {
-          tot += element['price'] as int;
+          tot += ((element['price'] as int) * (element['qnty'] as int));
         });
         //
         return Hist(
