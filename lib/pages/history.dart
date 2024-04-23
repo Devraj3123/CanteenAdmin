@@ -112,7 +112,11 @@
 //   }
 // }
 
+import 'package:canteen_app/pages/histlist.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../Model/hist.dart';
+import '../services/firestore_func.dart';
 
 class OrderHistoryPage extends StatefulWidget {
   @override
@@ -137,76 +141,51 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ), // Set red background color
-        title: Text('Order History'),
-      ),
-      body: (orders.isNotEmpty)
-          ? ListView.builder(
-              itemCount: orders.length,
-              itemBuilder: (context, int i) {
-                return GestureDetector(
-                  onTap: () {
-                    // Navigate to order details page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OrderDetailsPage(orders[i]),
-                      ),
-                    );
-                  },
-                  child: Card(
-                    child: ListTile(
-                      enabled: !orders[i]['isDelivered'],
-                      title: Text("Order #${orders[i]['orderNumber']}"),
-                      subtitle: Text(
-                          'Total Amount: ${orders[i]['totalAmount'].toString()} INR'),
-                      trailing: Text(
-                          'Status: ${(orders[i]['isDelivered']) ? "Delivered" : "Pending"}'),
-                    ),
-                  ),
-                );
-              },
-            )
-          : Center(
-              child: Text("No order history found."),
+    return StreamProvider<List<Hist?>>.value(
+      initialData: [],
+      value: History().get_hist,
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ), // Set red background color
+          title: Text('Order History'),
+        ),
+        body: histlist(),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: 1,
+          items: [
+            BottomNavigationBarItem(
+              icon: IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/home');
+                },
+                icon: Icon(Icons.home_outlined),
+              ),
+              label: 'Home',
             ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 1,
-        items: [
-          BottomNavigationBarItem(
-            icon: IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/home');
-              },
-              icon: Icon(Icons.home_outlined),
+            BottomNavigationBarItem(
+              icon: IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/history');
+                },
+                icon: Icon(Icons.history_outlined),
+              ),
+              label: 'History',
             ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/history');
-              },
-              icon: Icon(Icons.history_outlined),
+            BottomNavigationBarItem(
+              icon: IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/add');
+                },
+                icon: Icon(Icons.add),
+              ),
+              label: 'Add Item',
             ),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: IconButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/add');
-              },
-              icon: Icon(Icons.add),
-            ),
-            label: 'Add Item',
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

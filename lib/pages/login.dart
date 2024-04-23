@@ -40,7 +40,7 @@ class _LoginDemoState extends State<LoginDemo> {
                     /*decoration: BoxDecoration(
           						color: Colors.red,
           						borderRadius: BorderRadius.circular(50.0)),*/
-                    child: Image.asset('assets/images/image.jpg'),
+                    child: Image.asset('assets/image.jpg'),
                   ),
                 ),
               ),

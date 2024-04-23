@@ -33,6 +33,7 @@ flutter:
     - assets/profile.jpg
     - assets/logo.jpeg
     - assets/food.jpg
+    - assets/image.jpg
   uses-material-design: true
 
 

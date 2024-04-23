@@ -533,6 +533,7 @@
 
 import 'package:canteen_app/Providers/imgpro.dart';
 import 'package:canteen_app/pages/addition.dart';
+import 'package:canteen_app/pages/login.dart';
 import 'package:canteen_app/pages/update_options.dart';
 import 'package:provider/provider.dart';
 import 'pages/lunch.dart';
@@ -557,13 +558,14 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(providers: [ChangeNotifierProvider(create: (context)=> imgpro())],
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (context) => imgpro())],
       child: MaterialApp(
         title: 'Admin Homepage',
         theme: ThemeData(
           primarySwatch: Colors.red,
         ),
-        home: AdminHomePage(),
+        home: LoginDemo(),
         routes: {
           '/home': (context) => AdminHomePage(),
           '/history': (context) => OrderHistoryPage(),
@@ -687,7 +689,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                         // Handle onPressed for Menu
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
-                              return UploadPage();
+                          return UploadPage();
                         }));
                       },
                       child: Text(

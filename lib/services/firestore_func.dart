@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:canteen_app/Model/hist.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../Model/food_item.dart';
 
@@ -92,5 +95,34 @@ class qrscanner {
       print('Error deleting document: $e');
       // Handle error
     }
+  }
+}
+
+class History {
+  final CollectionReference hist =
+      FirebaseFirestore.instance.collection('history');
+
+  List<Hist?> convh(QuerySnapshot q) {
+    return q.docs.map((docs) {
+      Map<String, dynamic>? d =
+          docs.data() as Map<String, dynamic>?; //Convert Object? to map
+      //Check if data is not null before accessing its properties
+      if (d != null) {
+        int tot = 0;
+        List order = d['order'];
+        order.forEach((element) {
+          tot += element['price'] as int;
+        });
+        //
+        return Hist(
+          pid: d['pid'],
+          total: tot,
+        );
+      }
+    }).toList();
+  }
+
+  Stream<List<Hist?>> get get_hist {
+    return hist.snapshots().map(convh);
   }
 }

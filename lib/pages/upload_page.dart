@@ -1,14 +1,12 @@
-// import 'dart:io';
 import 'dart:io';
-
-import 'package:canteen_app/Providers/imgpro.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../Widgets/custom_button.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../Providers/imgpro.dart';
 
 class UploadPage extends StatefulWidget {
   const UploadPage();
@@ -18,134 +16,100 @@ class UploadPage extends StatefulWidget {
 }
 
 class _UploadPageState extends State<UploadPage> {
-
-  getimage(BuildContext context) {}
-  GlobalKey<FormState> key = GlobalKey();
-  String imageURL = '';
-
   XFile? file;
+  String? imageURL;
   bool check = false;
+
   @override
   Widget build(BuildContext context) {
     return Consumer<imgpro>(
-      builder: (context,value,builder)=>
-       Scaffold(
+      builder: (context, value, builder) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.red,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ), // Set red background color
-          title: Text('PICT CANTEEN'),
+          title: Text('Upload Image'),
         ),
         body: Center(
           child: Column(
-            // mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-
-                // print("Inside container :");
-                Container(
-                  child: value.img?.path!=null ? Image.file(
-                    File(value.img?.path ?? ''),
-                    width: 300,
-                    height: 400,
-                    fit: BoxFit.cover,
-                  ) : const Text('No image uploaded yet'),
-                ),
-
-              const SizedBox(
-                height: 10,
-              ),
+              value.img != null
+                  ? Image.file(
+                      File(value.img!.path),
+                      width: 300,
+                      height: 400,
+                      fit: BoxFit.cover,
+                    )
+                  : Text('No image selected'),
+              SizedBox(height: 10),
+              SizedBox(height: 10),
               Custombutton(
                 text: 'Select Image',
                 onpress: () async {
-                  ImagePicker imagepicker = ImagePicker();
-                    file = await imagepicker.pickImage(source: ImageSource.camera);
-                    print('${file?.path}');
-                    value.add(file);
-
+                  final picker = ImagePicker();
+                  final pickedFile =
+                      await picker.pickImage(source: ImageSource.camera);
+                  value.add(pickedFile);
+                  setState(() {
+                    file = pickedFile;
+                  });
                   // if (file == null) return;
-                  String uniqueFileName =
-                      DateTime.now().millisecondsSinceEpoch.toString();
-                  //get reference to storage root
-                  Reference referenceRoot = FirebaseStorage.instance.ref();
-                  Reference referenceDirImage = referenceRoot.child('images');
 
-                  //create a reference for the image to be stored
-                  Reference referenceImageToUpload =
-                      referenceDirImage.child(uniqueFileName);
+                  // Read the file as bytes
+                  List<int> imageBytes = await File(file!.path).readAsBytes();
+
+                  // Convert the List<int> to Uint8List
+                  Uint8List uint8list = Uint8List.fromList(imageBytes);
+
+                  // Create a reference to the Firebase storage path
+                  Reference referenceImageToUpload = FirebaseStorage.instance
+                      .ref()
+                      .child(
+                          'images/${DateTime.now().millisecondsSinceEpoch}.jpg');
 
                   try {
-                    //store the file
-                    await referenceImageToUpload.putFile(File(value.img!.path));
-                    //success get the download url
-                      imageURL = await referenceImageToUpload.getDownloadURL();
+                    // Upload the bytes to Firebase Storage with content type set to 'image/jpeg'
+                    await referenceImageToUpload.putData(
+                      uint8list,
+                      SettableMetadata(contentType: 'image/jpeg'),
+                    );
+
+                    // Get the download URL for the uploaded file
+                    imageURL = await referenceImageToUpload.getDownloadURL();
+
                     setState(() {
-                      check=true;
+                      check = true;
                     });
-                    print(imageURL);
+
+                    print("Download URL: $imageURL");
                   } catch (error) {
-                    //catch error here
+                    print("Error uploading image: $error");
                   }
                 },
               ),
-              const SizedBox(
+              SizedBox(
                 height: 10,
               ),
-              (!check) ?
-              Custombutton(text: 'Upload Image',onpress: null) :
-              Custombutton(
-                text: 'Upload Image',
-                onpress: () async {
-                  print("inside upload");
-                  CollectionReference _reference =
-                      FirebaseFirestore.instance.collection('menu_image');
-                  if (imageURL.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please upload an image')));
-                    return;
-                  }
-                  String dataToSend = imageURL;
-                  //Add a new item
-                  _reference.doc('image1').set({'url': imageURL});
-                  // }
-                },
-              ),
+              (!check)
+                  ? Custombutton(text: 'Upload Image', onpress: null)
+                  : Custombutton(
+                      text: 'Upload Image',
+                      onpress: () async {
+                        print("inside upload");
+                        CollectionReference _reference =
+                            FirebaseFirestore.instance.collection('menu_image');
+                        if (imageURL!.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Please upload an image')));
+                          return;
+                        }
+                        String dataToSend = imageURL ?? "";
+                        //Add a new item
+                        _reference.doc('image1').set({'url': imageURL});
+                        // }
+                      },
+                    ),
             ],
           ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          currentIndex: 2,
-          items: [
-            BottomNavigationBarItem(
-              icon: IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/home');
-                },
-                icon: Icon(Icons.home_outlined),
-              ),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/history');
-                },
-                icon: Icon(Icons.history_outlined),
-              ),
-              label: 'History',
-            ),
-            BottomNavigationBarItem(
-              icon: IconButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/add');
-                },
-                icon: Icon(Icons.add),
-              ),
-              label: 'Add Item',
-            ),
-          ],
         ),
       ),
     );
