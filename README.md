@@ -1,4 +1,4 @@
-# admin
+# Canteen Management System(Admin)
 
 A new Flutter project.
 
